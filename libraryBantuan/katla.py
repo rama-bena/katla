@@ -1,55 +1,46 @@
 import numpy as np
 import re
 import random
-
+from tqdm import tqdm
 
 class Katla():
     def __init__(self, daftar_kata):
+        self.daftar_kata_semua = daftar_kata
         self.daftar_kata = daftar_kata
-        self.huruf_benar = [False, False, False, False, False]
-        self.list_pola = []
-        T = {'0' : '*', '1' : '?', '2' : '!'}
-        for number in range(3**5):
-            ternary=np.base_repr(number,base=3)
-            pola = f"{ternary:05s}"
-            self.list_pola.append(''.join([T[i] for i in pola]))
+        
         
     def kandidat(self, tebakan, pola, daf_kata):
-        list_tanda_seru    = [idx for idx,huruf in enumerate(pola) if huruf=='!']
-        list_tanda_tanya   = [idx for idx,huruf in enumerate(pola) if huruf=='?']
-        list_tanda_bintang = [idx for idx,huruf in enumerate(pola) if huruf=='*']
+        pola_regex = [r"\w"]*5
+        huruf_tanda_tanya = [tebakan[i] for i in range(5) if pola[i]=='?']
+        huruf_bintang = ''.join([tebakan[i] for i in range(5) if (pola[i]=='*') & (tebakan[i] not in huruf_tanda_tanya)])
 
-        # Pola Regex
-        pola_regex = ["."]*5
-        for pos in list_tanda_seru:                 # huruf di tanda seru benar
-            pola_regex[pos] = tebakan[pos] 
-            self.huruf_benar[pos] = True   
-        for pos in list_tanda_tanya:                # huruf di tanda tanya salah
-            pola_regex[pos] = f"[^{tebakan[pos]}]"
-
-        # Cari daftar kata sesuai pola regex
+        # Membentuk pola regex
+        for i, p in enumerate(pola):
+            if p == '!':
+                pola_regex[i] = tebakan[i]
+            elif p == '?':
+                pola_regex[i] = f"[^ {tebakan[i]+huruf_bintang}]"
+            elif p == '*':
+                pola_regex[i] = f"[^ {huruf_bintang}]"
+        
         pola_regex = r"".join(pola_regex)
-        daf_kata =  [kata for kata in daf_kata if re.match(pola_regex, kata)]
+        daf_kata = re.findall(pola_regex, ' '.join(daf_kata))
 
-        # Hilangkan kata yang ada huruf di list_tanda_bintang
-        list_huruf_salah = [tebakan[pos] for pos in list_tanda_bintang]
+        # Mengambil kata2 yang ada huruf ?
+        list_harus_ada_huruf = [tebakan[i] for i in range(5) if pola[i]=='?']
         new_daf_kata = []
         for kata in daf_kata:
-            tidak_ada_huruf_salah = True
-            kata_tanpa_huruf_benar = [kata[pos] for pos in range(5) if not self.huruf_benar[pos]]
-            for huruf_salah in list_huruf_salah:
-                if huruf_salah in kata_tanpa_huruf_benar:
-                    tidak_ada_huruf_salah = False; break
-            if tidak_ada_huruf_salah:
-                new_daf_kata.append(''.join(kata))
-        daf_kata = new_daf_kata 
-
-        # Cara kata yang ada huruf di tanda tanya
-        for pos in list_tanda_tanya:
-            huruf = tebakan[pos]
-            daf_kata = [kata for kata in daf_kata if huruf in kata]
+            kata_tanpa_benar = [kata[i] for i in range(5) if pola[i]!='!']
+            sudah_benar = True
+            for harus_ada_huruf in list_harus_ada_huruf:
+                if harus_ada_huruf in kata_tanpa_benar:
+                    kata_tanpa_benar.remove(harus_ada_huruf)
+                else:
+                    sudah_benar=False; break
+            if sudah_benar:
+                new_daf_kata.append(kata)
+        return new_daf_kata
         
-        return daf_kata
 
     def tebakan_selanjutnya(self, tebakan, pola, tampilkan_detail=False):
         self.daftar_kata = self.kandidat(tebakan, pola, self.daftar_kata)
@@ -58,11 +49,22 @@ class Katla():
         return self.__cari_kata_selanjutnya()
         
     def __cari_kata_selanjutnya(self):
+        # Cari semua kemungkinan pola
+        semua_pola = []
+        T = {'0' : '*', '1' : '?', '2' : '!'}
+        for number in range(3**5):
+            ternary=np.base_repr(number,base=3)
+            pola = f"{ternary:05s}"
+            semua_pola.append(''.join([T[i] for i in pola]))
+        
+        # Cari kata terbaik
         kata_terbaik = ("TIDAK ADA KATA", 10**8)
         for kata in self.daftar_kata:
             banyak = 0
-            for pola in self.list_pola:
+            for pola in semua_pola:
                 banyak += len(self.kandidat(kata, pola, self.daftar_kata))
+                if banyak > kata_terbaik[1]:
+                    break
             if banyak < kata_terbaik[1]:
                 kata_terbaik = (kata, banyak)
         return kata_terbaik[0]
