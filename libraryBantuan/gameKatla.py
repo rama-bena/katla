@@ -1,5 +1,4 @@
 import random
-from katla import Katla
 
 class GameKatla():
     def __init__(self, daftar_kata):

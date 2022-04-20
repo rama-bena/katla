@@ -55,4 +55,3 @@ class Katla():
 
         return kata
 
-

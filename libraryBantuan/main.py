@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from gameKatla import GameKatla
+from katla import Katla, GameKatla
 import os
 
 if __name__ == "__main__":
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     while respon == 'y':
         print("PERMAINAN KATLA")
         game.mulai_game()
-        respon = input("Ingin bermain lagi?[y/n]")
+        respon = input("Ingin bermain lagi?[y/n] : ")
         if respon == 'y':
             os.system('cls')
     print(f"SKOR AKHIR ANDA : {game.skor}")
