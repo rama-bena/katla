@@ -45,10 +45,11 @@ class Katla():
     def tebakan_selanjutnya(self, tebakan, pola, tampilkan_detail=False):
         self.daftar_kata = self.kandidat(tebakan, pola, self.daftar_kata)
         if tampilkan_detail:
-            print(f"Banyak Kata : {len(self.daftar_kata)}\n{self.daftar_kata}\n\n")
-        return self.__cari_kata_selanjutnya()
+            print(f"Banyak Kata : {len(self.daftar_kata)}")
+            # print(self.daftar_kata)
+        return self.__cari_kata_selanjutnya(tampilkan_detail)
         
-    def __cari_kata_selanjutnya(self):
+    def __cari_kata_selanjutnya(self, tampilkan_detail):
         def cari_semua_kemungkinan_pola():
             T = {'0' : '*', '1' : '?', '2' : '!'}
             list_pola = []
@@ -63,16 +64,21 @@ class Katla():
         
         semua_pola = cari_semua_kemungkinan_pola()
         kata_terbaik = ("TIDAK ADA KATA", 10000)
+        hasil_semua = []
         # Cari kata terbaik
-        for kata in self.daftar_kata_semua: # pakai semua daftar kata
+        for kata in tqdm(self.daftar_kata):
             entropi = 0
             for pola in semua_pola:         # untuk setiap pola hitung kemungkinannya
                 banyak = len(self.kandidat(kata, pola, self.daftar_kata))
                 pi = P(banyak)
                 entropi += (pi*np.log2(pi)) if pi !=0 else 0
             entropi *= -1
-            
             if entropi < kata_terbaik[1]:
                 kata_terbaik = (kata, entropi)
+            hasil_semua.append((kata, entropi))
+
+        if tampilkan_detail:
+            hasil_semua.sort(key=lambda x: x[1])
+            print(hasil_semua)
 
         return kata_terbaik[0]
