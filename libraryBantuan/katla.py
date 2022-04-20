@@ -7,7 +7,13 @@ class Katla():
     def __init__(self, daftar_kata):
         self.daftar_kata = daftar_kata
         self.huruf_benar = [False, False, False, False, False]
-
+        self.list_pola = []
+        T = {'0' : '*', '1' : '?', '2' : '!'}
+        for number in range(3**5):
+            ternary=np.base_repr(number,base=3)
+            pola = f"{ternary:05s}"
+            self.list_pola.append(''.join([T[i] for i in pola]))
+        
     def kandidat(self, tebakan, pola, daf_kata):
         list_tanda_seru    = [idx for idx,huruf in enumerate(pola) if huruf=='!']
         list_tanda_tanya   = [idx for idx,huruf in enumerate(pola) if huruf=='?']
@@ -47,11 +53,16 @@ class Katla():
 
     def tebakan_selanjutnya(self, tebakan, pola, tampilkan_detail=False):
         self.daftar_kata = self.kandidat(tebakan, pola, self.daftar_kata)
-
         if tampilkan_detail:
             print(f"Banyak Kata : {len(self.daftar_kata)}\n{self.daftar_kata}\n\n")
-
-        kata = random.choice(self.daftar_kata) if len(self.daftar_kata) != 0 else "TIDAK ADA KATA"
-
-        return kata
-
+        return self.__cari_kata_selanjutnya()
+        
+    def __cari_kata_selanjutnya(self):
+        kata_terbaik = ("TIDAK ADA KATA", 10**8)
+        for kata in self.daftar_kata:
+            banyak = 0
+            for pola in self.list_pola:
+                banyak += len(self.kandidat(kata, pola, self.daftar_kata))
+            if banyak < kata_terbaik[1]:
+                kata_terbaik = (kata, banyak)
+        return kata_terbaik[0]

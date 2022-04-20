@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-from katla import Katla, GameKatla
+from gameKatla import GameKatla
 import os
 
 if __name__ == "__main__":
-    daftar_kata = list(pd.read_csv('lima huruf.csv', header=None)[0])
+    file_path = 'D:\Rama Nitip\python\katla\lima huruf.csv'
+    daftar_kata = list(pd.read_csv(file_path, header=None)[0])
     game = GameKatla(daftar_kata)
 
     respon = 'y'

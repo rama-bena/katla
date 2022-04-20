@@ -38,6 +38,7 @@ class GameKatla():
             else:
                 list_jawaban.append(self.__jawaban[i])
         
+        # yellow check / ada tapi salah tempat
         for i in range(5):
             if respon_pola[i] == '!':
                 continue
