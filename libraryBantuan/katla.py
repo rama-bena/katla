@@ -49,22 +49,30 @@ class Katla():
         return self.__cari_kata_selanjutnya()
         
     def __cari_kata_selanjutnya(self):
-        # Cari semua kemungkinan pola
-        semua_pola = []
-        T = {'0' : '*', '1' : '?', '2' : '!'}
-        for number in range(3**5):
-            ternary=np.base_repr(number,base=3)
-            pola = f"{ternary:05s}"
-            semua_pola.append(''.join([T[i] for i in pola]))
+        def cari_semua_kemungkinan_pola():
+            T = {'0' : '*', '1' : '?', '2' : '!'}
+            list_pola = []
+            for number in range(3**5):
+                ternary=np.base_repr(number,base=3)
+                pola = f"{ternary:05s}"
+                list_pola.append(''.join([T[i] for i in pola]))
+            return list_pola
+    
+        def P(x):
+            return x / len(self.daftar_kata)
         
+        semua_pola = cari_semua_kemungkinan_pola()
+        kata_terbaik = ("TIDAK ADA KATA", 10000)
         # Cari kata terbaik
-        kata_terbaik = ("TIDAK ADA KATA", 10**8)
-        for kata in self.daftar_kata:
-            banyak = 0
-            for pola in semua_pola:
-                banyak += len(self.kandidat(kata, pola, self.daftar_kata))
-                if banyak > kata_terbaik[1]:
-                    break
-            if banyak < kata_terbaik[1]:
-                kata_terbaik = (kata, banyak)
+        for kata in self.daftar_kata_semua: # pakai semua daftar kata
+            entropi = 0
+            for pola in semua_pola:         # untuk setiap pola hitung kemungkinannya
+                banyak = len(self.kandidat(kata, pola, self.daftar_kata))
+                pi = P(banyak)
+                entropi += (pi*np.log2(pi)) if pi !=0 else 0
+            entropi *= -1
+            
+            if entropi < kata_terbaik[1]:
+                kata_terbaik = (kata, entropi)
+
         return kata_terbaik[0]
