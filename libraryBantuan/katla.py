@@ -7,7 +7,7 @@ class Katla():
     def __init__(self, daftar_kata):
         self.daftar_kata_semua = daftar_kata
         self.daftar_kata = daftar_kata
-        
+        self.semua_pola = self.__cari_semua_kemungkinan_pola()
         
     def kandidat(self, tebakan, pola, daf_kata):
         pola_regex = [r"\w"]*5
@@ -47,31 +47,33 @@ class Katla():
         if tampilkan_detail:
             print(f"Banyak Kata : {len(self.daftar_kata)}")
             # print(self.daftar_kata)
-        return self.cari_kata_selanjutnya(tampilkan_detail)
+        return self.cari_kata_selanjutnya(1 if tampilkan_detail else 0)
         
-    def cari_kata_selanjutnya(self, tampilkan_detail=False):
+    def cari_kata_selanjutnya(self, verbose=0):
         def P(n):
             return n / len(self.daftar_kata)
         def impurity(n):
             return ((n-1) / n) if n!=0 else 0
 
-        semua_pola = self.__cari_semua_kemungkinan_pola()
         hasil_semua = []
         impurity_awal = impurity(len(self.daftar_kata))
-
         # Cari kata terbaik
-        for kata in self.daftar_kata:
+        daftar_kata = tqdm(self.daftar_kata) if verbose==1 else self.daftar_kata
+        for kata in daftar_kata:
             impurity_akhir = 0
-
-            for pola in semua_pola:         # untuk setiap pola hitung kemungkinannya
+            isi = []
+            for pola in self.semua_pola:         # untuk setiap pola hitung kemungkinannya
                 n = len(self.kandidat(kata, pola, self.daftar_kata))
                 impurity_akhir += P(n) * impurity(n)
+                if n!=0:
+                    isi.append((n,pola))
             
-            information_gain = impurity_awal - impurity_akhir
-            hasil_semua.append((kata, information_gain))
+            information_gain = impurity_awal - impurity_akhir           
+            hasil_semua.append((kata, information_gain, isi))
 
         hasil_semua.sort(key=lambda x: x[1], reverse=True)
-        if tampilkan_detail:
+       
+        if verbose==2:
             i = 0
             terbaik = hasil_semua[0][1]
             while hasil_semua[i][1]==terbaik:
@@ -80,14 +82,14 @@ class Katla():
                 if i >= len(hasil_semua):
                     break
 
-        return hasil_semua[0][0]
         # return hasil_semua
+        return hasil_semua[0][0]
 
     def __cari_semua_kemungkinan_pola(self):
         T = {'0' : '*', '1' : '?', '2' : '!'}
         list_pola = []
-        for number in range(1, 3**5):
+        for number in range(3**5):             # total kemungkinan pola : 3 pangkat 5
             ternary=np.base_repr(number,base=3)
-            pola = f"{ternary:05s}"
+            pola = str(ternary).zfill(5)       # kasi angka 0 di depan biar sampai 5 digit
             list_pola.append(''.join([T[i] for i in pola]))
         return list_pola
