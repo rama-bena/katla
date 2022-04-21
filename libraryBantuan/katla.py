@@ -49,7 +49,7 @@ class Katla():
             # print(self.daftar_kata)
         return self.cari_kata_selanjutnya(tampilkan_detail)
         
-    def cari_kata_selanjutnya(self, tampilkan_detail):
+    def cari_kata_selanjutnya(self, tampilkan_detail=False):
         def P(n):
             return n / len(self.daftar_kata)
         def impurity(n):
@@ -60,7 +60,7 @@ class Katla():
         impurity_awal = impurity(len(self.daftar_kata))
 
         # Cari kata terbaik
-        for kata in tqdm(self.daftar_kata):
+        for kata in self.daftar_kata:
             impurity_akhir = 0
 
             for pola in semua_pola:         # untuk setiap pola hitung kemungkinannya
@@ -81,6 +81,7 @@ class Katla():
                     break
 
         return hasil_semua[0][0]
+        # return hasil_semua
 
     def __cari_semua_kemungkinan_pola(self):
         T = {'0' : '*', '1' : '?', '2' : '!'}

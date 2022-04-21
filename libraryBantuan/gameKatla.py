@@ -1,10 +1,10 @@
 import random
 
 class GameKatla():
-    def __init__(self, daftar_kata):
+    def __init__(self, daftar_kata, jawaban=""):
         self.daftar_kata = daftar_kata
         self.skor = 0
-        self.__jawaban = ""
+        self.__jawaban = jawaban
 
     def mulai_game(self):
         self.__jawaban = random.choice(self.daftar_kata)
@@ -13,7 +13,7 @@ class GameKatla():
 
         for idx_tebakan in range(total_tebakan):
             tebakan = input("Tebakan Anda : ")
-            respon_pola = self.__evaluasi_tebakan(tebakan)
+            respon_pola = self.evaluasi_tebakan(tebakan)
             print(f"Hasil tebakan Anda : {respon_pola}")
 
             if respon_pola == "!!!!!":
@@ -29,7 +29,7 @@ class GameKatla():
         else:
             print("Anda gagal, kesempatan mencoba sudah 6")
 
-    def __evaluasi_tebakan(self, tebakan):
+    def evaluasi_tebakan(self, tebakan):
         list_jawaban = []
         respon_pola = ['*']*5
         for i in range(5):
