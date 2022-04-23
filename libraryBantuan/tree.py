@@ -17,6 +17,7 @@ class Node():
         self.next_node = {}
 
 class DecisionTree():
+    
     def __init__(self, path_object=None):
         self.semua_pola = self.__cari_semua_kemungkinan_pola()
         self.root = None
@@ -24,6 +25,8 @@ class DecisionTree():
             object_dict = self.baca_object(path_object)
             self.root = self.jadikan_object(object_dict)
         self.now = self.root
+        self.pakai_semua_daftar = False
+        self.daftar_kata_semua = None  
 
     def kata_berikutnya(self, pola, awal=False):
         if awal:
@@ -32,25 +35,39 @@ class DecisionTree():
             self.now = self.now.next_node[pola]
         return self.now.kata
 
-    def buat_tree(self, daftar_kata, kata_root=None):
-        def __buat_tree(kata, daftar_kata, depth): # buat tree rekursif
-            node = Node(kata, daftar_kata)
-            if (len(daftar_kata)<=1): # BASE CASE
-                return node
-            
-            for pola in self.semua_pola:
-                next_daftar_kata = self.kandidat(kata, pola, daftar_kata)
-                if len(next_daftar_kata)==0:        # tidak ada daftar kata dengan pola ini
-                    continue
-                next_kata = self.kata_terbaik(next_daftar_kata)
-                node.next_node[pola] = __buat_tree(next_kata, next_daftar_kata, depth+1)
-            return node
+    def buat_tree(self, daftar_kata, kata_root=None, pakai_semua_daftar=False):
+        """membuat tree
 
+        Args:
+            daftar_kata (list): daftar kata
+            kata_root (str, optional): kata awal. Defaults to None.
+            pakai_semua_daftar (bool, optional): pakai daftar kata semua untuk split. Defaults to False.
+        """        
+        
+
+        # Bagian yang pertama kali jalan
+        self.pakai_semua_daftar = pakai_semua_daftar
+        self.daftar_kata_semua  = daftar_kata
         if kata_root == None:
-            kata_root = self.kata_terbaik(daftar_kata)
-        self.root = __buat_tree(kata_root, daftar_kata, 0)
+            kata_root = self.cari_kata_terbaik(daftar_kata)
+        self.root = self.__buat_tree(kata_root, daftar_kata, 0)
         self.now  = self.root
-
+    
+    def __buat_tree(self, kata, daftar_kata, depth): # buat tree rekursif
+        node = Node(kata, daftar_kata)
+        if (depth==10) or (len(daftar_kata)<=1): # BASE CASE
+            return node
+        
+        for idx, pola in enumerate(self.semua_pola):
+            if kata == 'sarit':
+                print(f"{idx} dari {len(self.semua_pola)}")
+            next_daftar_kata = self.kandidat(kata, pola, daftar_kata)
+            if len(next_daftar_kata)==0:        # tidak ada daftar kata dengan pola ini
+                continue
+            next_kata = self.cari_kata_terbaik(next_daftar_kata)
+            node.next_node[pola] = self.__buat_tree(next_kata, next_daftar_kata, depth+1)
+        return node
+    
     def kandidat(self, tebakan, pola, daf_kata):
         pola_regex = [r"\w"]*5
         huruf_tanda_tanya = [tebakan[i] for i in range(5) if pola[i]=='?']
@@ -83,7 +100,7 @@ class DecisionTree():
                 new_daf_kata.append(kata)
         return new_daf_kata
 
-    def kata_terbaik(self, daftar_kata):
+    def cari_kata_terbaik(self, daftar_kata):
         def P(n):
             return n / len(daftar_kata)
         def impurity(n):
@@ -92,7 +109,8 @@ class DecisionTree():
         hasil = ("TIDAK ADA", -10000)
         impurity_awal = impurity(len(daftar_kata))
         # Cari kata terbaik
-        for kata in daftar_kata:
+        loop_daftar_kata = self.daftar_kata_semua if self.pakai_semua_daftar else daftar_kata
+        for kata in loop_daftar_kata:
             impurity_akhir = 0
             for pola in self.semua_pola:         # untuk setiap pola hitung kemungkinannya
                 n = len(self.kandidat(kata, pola, daftar_kata))
