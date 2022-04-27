@@ -4,7 +4,7 @@ from gameKatla import GameKatla
 import os
 
 if __name__ == "__main__":
-    file_path = 'D:\Rama Nitip\python\katla\lima huruf.csv'
+    file_path = "D:\\Rama Nitip\\python\\katla\\file text\\lima huruf katla.csv"
     daftar_kata = list(pd.read_csv(file_path, header=None)[0])
     game = GameKatla(daftar_kata)
 
